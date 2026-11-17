@@ -1,0 +1,30 @@
+{
+  "name": "Gestion Shop",
+  "short_name": "Gestion",
+  "start_url": "./gestion.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2331/2331949.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}{
+  "name": "Gestion Shop",
+  "short_name": "Gestion",
+  "start_url": "./gestion.html",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2331/2331949.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+
