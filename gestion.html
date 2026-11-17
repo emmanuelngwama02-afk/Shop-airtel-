@@ -14,4 +14,95 @@ h1{text-align:center}h1 span{color:#e40000}
 .sync{text-align:center;background:#001a00;border:1px solid #00ff88;color:#00ff88;padding:9px;border-radius:20px;font-size:12px;margin-bottom:12px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .box{background:#111;border:1px solid #222;border-radius:14px;padding:14px;text-align:center}
-.box small{color:#aaa}.
+.box small{color:#aaa}.box b{font-size:20px;display:block}
+.green b{color:#00ff88}.red b{color:#ff4444}.blue b{color:#00ccff}.yellow b{color:#ffcc00}
+.card{background:#111;border:1px solid #222;border-radius:14px;padding:15px;margin-top:15px}
+label{font-size:13px;color:#ccc;display:block;margin-top:10px}
+input,select{width:100%;padding:12px;margin-top:5px;background:#000;border:1px solid #333;color:#fff;border-radius:10px}
+.checks{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.checks label{background:#000;border:1px solid #333;padding:10px 12px;border-radius:20px;display:flex;gap:6px;margin:0}
+.checks input{width:auto}
+.btn{width:100%;padding:14px;margin-top:15px;border:none;border-radius:12px;font-weight:bold;font-size:16px;background:#00a651;color:#fff}
+table{width:100%;font-size:13px;border-collapse:collapse;margin-top:10px}
+th,td{padding:10px 6px;border-bottom:1px solid #222}
+</style>
+</head>
+<body>
+<h1>GESTION <span>CLOUD</span></h1>
+<p class="sub">Contrôle à distance - Même chiffres sur tous tes téléphones</p>
+<div class="sync" id="syncStatus">🟡 Connexion...</div>
+<div class="grid">
+<div class="box green"><small>TOTAL VENTES</small><b id="tVente">0 FC</b></div>
+<div class="box red"><small>TOTAL DÉPENSES</small><b id="tDep">0 FC</b></div>
+<div class="box blue"><small>BÉNÉFICE</small><b id="tBen">0 FC</b></div>
+<div class="box yellow"><small>OPÉRATIONS</small><b id="tNb">0</b></div>
+</div>
+<div class="card">
+<h3>➕ Nouvelle Opération</h3>
+<label>Code Boutique :</label>
+<input id="codeInput" value="SHOP-EMMANUEL-01" onchange="changerCode()">
+<label>Type :</label>
+<select id="type"><option value="Vente">✅ VENTE</option><option value="Dépense">❌ DÉPENSE</option></select>
+<label>Réseau :</label>
+<div class="checks" id="reseaux">
+<label><input type="checkbox" value="Vodacom"> 🔴 Vodacom</label>
+<label><input type="checkbox" value="Airtel"> 🔴 Airtel</label>
+<label><input type="checkbox" value="Orange"> 🟠 Orange</label>
+<label><input type="checkbox" value="RTL"> 🔵 RTL</label>
+</div>
+<label>Montant (FC) :</label>
+<input type="number" id="montant" placeholder="Ex: 10000">
+<label>Description :</label>
+<input type="text" id="desc" placeholder="Ex: Dépôt, Retrait...">
+<button class="btn" onclick="ajouter()">ENREGISTRER DANS LE CLOUD ☁️</button>
+</div>
+<div class="card"><h3>📋 Historique</h3><table><thead><tr><th>Date</th><th>Réseau</th><th>Type</th><th>Montant</th><th></th></tr></thead><tbody id="liste"></tbody></table></div>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyA5ztB5UTWpF4W812Ct351wVT1dqFtVxMU",
+  authDomain: "shop-airtel.firebaseapp.com",
+  projectId: "shop-airtel",
+  storageBucket: "shop-airtel.firebasestorage.app",
+  messagingSenderId: "537959264508",
+  appId: "1:537959264508:web:9c83f0f5c2061c746b2779",
+  measurementId: "G-0R1B6V3RQQ"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+let codeShop = localStorage.getItem('codeShop') || 'SHOP-EMMANUEL-01';
+document.getElementById('codeInput').value = codeShop;
+let unsubscribe = null;
+function changerCode(){ codeShop = document.getElementById('codeInput').value.trim() || 'SHOP-EMMANUEL-01'; localStorage.setItem('codeShop', codeShop); ecouter(); }
+function ecouter(){
+  if(unsubscribe) unsubscribe();
+  document.getElementById('syncStatus').textContent = '🟡 Connexion... Code: ' + codeShop;
+  unsubscribe = db.collection('boutiques').doc(codeShop).collection('operations').orderBy('timestamp','desc').onSnapshot((snap)=>{
+    document.getElementById('syncStatus').textContent = '🟢 CONNECTÉ CLOUD - ' + codeShop + ' - En direct';
+    let data = []; snap.forEach(doc=>{ data.push({id:doc.id, ...doc.data()}); }); afficher(data);
+  }, (err)=>{ document.getElementById('syncStatus').textContent = '🔴 Erreur: ' + err.message; });
+}
+async function ajouter(){
+  let type = document.getElementById('type').value;
+  let montant = parseInt(document.getElementById('montant').value);
+  let desc = document.getElementById('desc').value || 'Sans description';
+  let reseaux = [...document.querySelectorAll('#reseaux input:checked')].map(c=>c.value);
+  if(!montant){alert('Mets le montant !');return}
+  if(reseaux.length==0) reseaux=['Autre'];
+  await db.collection('boutiques').doc(codeShop).collection('operations').add({type, montant, desc, reseaux, date: new Date().toLocaleString('fr-FR'), timestamp: Date.now()});
+  document.getElementById('montant').value=''; document.getElementById('desc').value='';
+  document.querySelectorAll('#reseaux input').forEach(c=>c.checked=false);
+}
+async function supprimer(id){ if(confirm('Supprimer ?')){ await db.collection('boutiques').doc(codeShop).collection('operations').doc(id).delete(); } }
+function afficher(data){
+  let v = data.filter(d=>d.type=='Vente').reduce((a,b)=>a+b.montant,0);
+  let d = data.filter(d=>d.type=='Dépense').reduce((a,b)=>a+b.montant,0);
+  document.getElementById('tVente').textContent = v.toLocaleString()+' FC';
+  document.getElementById('tDep').textContent = d.toLocaleString()+' FC';
+  document.getElementById('tBen').textContent = (v-d).toLocaleString()+' FC';
+  document.getElementById('tNb').textContent = data.length;
+  document.getElementById('liste').innerHTML = data.map(x=>`<tr><td>${x.date}<br><small style="color:#aaa">${x.desc}</small></td><td>${x.reseaux.join(', ')}</td><td>${x.type}</td><td><b>${x.montant.toLocaleString()} FC</b></td><td><button onclick="supprimer('${x.id}')">🗑️</button></td></tr>`).join('');
+}
+ecouter();
+</script>
+</body>
+</html>
