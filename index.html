@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SHOP AIRTEL</title>
+<style>body{font-family:Arial;background:#f2f2f2;padding:15px;margin:0}h1{text-align:center;color:#e60000}.box{background:white;padding:15px;border-radius:12px;margin-bottom:12px}input{width:100%;padding:12px;margin:6px 0;border:1px solid #ccc;border-radius:8px;font-size:16px;box-sizing:border-box}button{width:100%;padding:13px;border:none;border-radius:8px;font-size:16px;font-weight:bold} .btn-vente{background:#0a7a42;color:white}.btn-depense{background:#d32f2f;color:white}.btn-code{background:#e60000;color:white}.btn-sup{width:auto;padding:5px 10px;background:#333;color:white;border-radius:6px}.total{font-size:22px;text-align:center;font-weight:bold}.vert{color:#0a7a42}.rouge{color:#d32f2f}.ligne{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee}</style></head>
+<body>
+<h1>🛒 SHOP AIRTEL</h1>
+<div class="box"><h3>Code Boutique</h3><input id="codeBoutique" placeholder="Ex: SHOP-AIRTEL"><button class="btn-code" onclick="sauverCode()">ENTRER</button><p>Boutique : <b id="codeActuel">-</b></p></div>
+<div class="box total">Ventes: <span class="vert" id="tVente">0 Fc</span><br>Dépenses: <span class="rouge" id="tDepense">0 Fc</span><hr>BÉNÉFICE: <span id="tBenef">0 Fc</span></div>
+<div class="box"><h3>➕ VENTE</h3><input id="nomVente" placeholder="Ex: SIM Airtel, Forfait"><input id="montVente" type="number" placeholder="Montant Fc"><button class="btn-vente" onclick="ajouter('vente')">ENREGISTRER VENTE</button></div>
+<div class="box"><h3>➖ DÉPENSE</h3><input id="nomDepense" placeholder="Ex: Transport, Crédit"><input id="montDepense" type="number" placeholder="Montant Fc"><button class="btn-depense" onclick="ajouter('depense')">ENREGISTRER DÉPENSE</button></div>
+<div class="box"><h3>📋 Historique</h3><div id="liste">Charge...</div></div>
+<script>
+let code=localStorage.getItem('codeBoutique')||'SHOP-AIRTEL';let data=[];
+document.getElementById('codeBoutique').value=code;document.getElementById('codeActuel').innerText=code;
+function sauverCode(){let c=document.getElementById('codeBoutique').value.trim().toUpperCase().replace(/[^A-Z0-9-]/g,'-');if(!c){alert('Mets un code');return;}code=c;localStorage.setItem('codeBoutique',code);document.getElementById('codeActuel').innerText=code;charger();}
+async function envoyer(){try{await fetch('https://dweet.io/dweet/for/'+code,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({liste:data})});}catch(e){}}
+async function charger(){try{let r=await fetch('https://dweet.io/get/latest/dweet/for/'+code);let j=await r.json();if(j.with&&j.with[0]&&j.with[0].content&&j.with[0].content.liste){data=j.with[0].content.liste;}afficher();}catch(e){}}
+function ajouter(type){let nom=document.getElementById(type=='vente'?'nomVente':'nomDepense').value;let montant=parseInt(document.getElementById(type=='vente'?'montVente':'montDepense').value);if(!nom||!montant){alert('Mets nom et montant');return;}data.unshift({type,nom,montant,heure:new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})});document.getElementById('nomVente').value='';document.getElementById('montVente').value='';document.getElementById('nomDepense').value='';document.getElementById('montDepense').value='';afficher();envoyer();}
+function supprimer(i){if(confirm('Effacer ?')){data.splice(i,1);afficher();envoyer();}}
+function afficher(){let v=0,d=0,html='';data.forEach((x,i)=>{if(x.type=='vente')v+=x.montant;else d+=x.montant;html+=`<div class="ligne"><span>${x.heure} - ${x.nom}</span><span><b style="color:${x.type=='vente'?'green':'red'}">${x.type=='vente'?'+':'-'} ${x.montant.toLocaleString()} Fc</b> <button class="btn-sup" onclick="supprimer(${i})">X</button></span></div>`;});document.getElementById('tVente').innerText=v.toLocaleString()+' Fc';document.getElementById('tDepense').innerText=d.toLocaleString()+' Fc';let b=v-d;let el=document.getElementById('tBenef');el.innerText=b.toLocaleString()+' Fc';el.style.color=b>=0?'green':'red';document.getElementById('liste').innerHTML=html||'Aucune vente';}
+charger();setInterval(charger,5000);
+</script></body></html>
