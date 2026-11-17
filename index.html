@@ -1,21 +1,129 @@
+
 <!DOCTYPE html>
-<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SHOP AIRTEL</title>
-<style>body{font-family:Arial;background:#f2f2f2;padding:15px;margin:0}h1{text-align:center;color:#e60000}.box{background:white;padding:15px;border-radius:12px;margin-bottom:12px}input{width:100%;padding:12px;margin:6px 0;border:1px solid #ccc;border-radius:8px;font-size:16px;box-sizing:border-box}button{width:100%;padding:13px;border:none;border-radius:8px;font-size:16px;font-weight:bold} .btn-vente{background:#0a7a42;color:white}.btn-depense{background:#d32f2f;color:white}.btn-code{background:#e60000;color:white}.btn-sup{width:auto;padding:5px 10px;background:#333;color:white;border-radius:6px}.total{font-size:22px;text-align:center;font-weight:bold}.vert{color:#0a7a42}.rouge{color:#d32f2f}.ligne{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #eee}</style></head>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shop Airtel - Dépôt, Retrait, Airtel Money</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#000;color:#fff;padding-bottom:80px}
+header{background:#0a0a0a;padding:18px 15px;text-align:center;border-bottom:2px solid #e40000;position:sticky;top:0;z-index:10}
+header h1{font-size:24px;color:#fff}
+header h1 span{color:#e40000}
+header p{color:#ccc;font-size:13px;margin-top:4px}
+.hero{background:linear-gradient(135deg,#e40000,#900000);margin:15px;border-radius:16px;padding:20px;text-align:center}
+.hero h2{font-size:22px}
+.hero p{font-size:14px;margin:8px 0 14px;opacity:.9}
+.hero a{display:inline-block;background:#fff;color:#e40000;padding:12px 20px;border-radius:30px;font-weight:bold;text-decoration:none}
+.section{padding:0 15px;margin-top:20px}
+.section h3{font-size:18px;margin-bottom:12px;border-left:4px solid #e40000;padding-left:8px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.card{background:#111;border:1px solid #222;border-radius:14px;padding:16px;text-align:center}
+.card .icon{font-size:28px;margin-bottom:8px}
+.card h4{font-size:15px;margin-bottom:4px}
+.card p{font-size:12px;color:#aaa}
+.card a{display:inline-block;margin-top:10px;background:#e40000;color:#fff;padding:8px 12px;border-radius:20px;font-size:12px;font-weight:bold;text-decoration:none}
+.card.orange a{background:#ff6600}
+.card.blue a{background:#0066ff}
+.card.green a{background:#00a651}
+.card.yellow a{background:#ffcc00;color:#000}
+.list{background:#111;border:1px solid #222;border-radius:14px;padding:15px}
+.list div{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #222;font-size:14px}
+.list div:last-child{border:none}
+.list b{color:#fff}
+.list span{color:#00ff88;font-weight:bold}
+.info{background:#111;margin:15px;border-radius:14px;padding:15px;font-size:13px;line-height:1.6;color:#ccc}
+.info b{color:#fff}
+footer{position:fixed;bottom:0;left:0;right:0;background:#0a0a0a;border-top:1px solid #222;display:flex;justify-content:space-around;padding:12px 0}
+footer a{color:#fff;text-decoration:none;text-align:center;font-size:12px}
+footer a.active{color:#e40000;font-weight:bold}
+.wa{position:fixed;bottom:70px;right:15px;background:#25D366;color:#fff;width:55px;height:55px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;text-decoration:none;box-shadow:0 4px 15px rgba(0,0,0,.5)}
+</style>
+</head>
 <body>
-<h1>🛒 SHOP AIRTEL</h1>
-<div class="box"><h3>Code Boutique</h3><input id="codeBoutique" placeholder="Ex: SHOP-AIRTEL"><button class="btn-code" onclick="sauverCode()">ENTRER</button><p>Boutique : <b id="codeActuel">-</b></p></div>
-<div class="box total">Ventes: <span class="vert" id="tVente">0 Fc</span><br>Dépenses: <span class="rouge" id="tDepense">0 Fc</span><hr>BÉNÉFICE: <span id="tBenef">0 Fc</span></div>
-<div class="box"><h3>➕ VENTE</h3><input id="nomVente" placeholder="Ex: SIM Airtel, Forfait"><input id="montVente" type="number" placeholder="Montant Fc"><button class="btn-vente" onclick="ajouter('vente')">ENREGISTRER VENTE</button></div>
-<div class="box"><h3>➖ DÉPENSE</h3><input id="nomDepense" placeholder="Ex: Transport, Crédit"><input id="montDepense" type="number" placeholder="Montant Fc"><button class="btn-depense" onclick="ajouter('depense')">ENREGISTRER DÉPENSE</button></div>
-<div class="box"><h3>📋 Historique</h3><div id="liste">Charge...</div></div>
-<script>
-let code=localStorage.getItem('codeBoutique')||'SHOP-AIRTEL';let data=[];
-document.getElementById('codeBoutique').value=code;document.getElementById('codeActuel').innerText=code;
-function sauverCode(){let c=document.getElementById('codeBoutique').value.trim().toUpperCase().replace(/[^A-Z0-9-]/g,'-');if(!c){alert('Mets un code');return;}code=c;localStorage.setItem('codeBoutique',code);document.getElementById('codeActuel').innerText=code;charger();}
-async function envoyer(){try{await fetch('https://dweet.io/dweet/for/'+code,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({liste:data})});}catch(e){}}
-async function charger(){try{let r=await fetch('https://dweet.io/get/latest/dweet/for/'+code);let j=await r.json();if(j.with&&j.with[0]&&j.with[0].content&&j.with[0].content.liste){data=j.with[0].content.liste;}afficher();}catch(e){}}
-function ajouter(type){let nom=document.getElementById(type=='vente'?'nomVente':'nomDepense').value;let montant=parseInt(document.getElementById(type=='vente'?'montVente':'montDepense').value);if(!nom||!montant){alert('Mets nom et montant');return;}data.unshift({type,nom,montant,heure:new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})});document.getElementById('nomVente').value='';document.getElementById('montVente').value='';document.getElementById('nomDepense').value='';document.getElementById('montDepense').value='';afficher();envoyer();}
-function supprimer(i){if(confirm('Effacer ?')){data.splice(i,1);afficher();envoyer();}}
-function afficher(){let v=0,d=0,html='';data.forEach((x,i)=>{if(x.type=='vente')v+=x.montant;else d+=x.montant;html+=`<div class="ligne"><span>${x.heure} - ${x.nom}</span><span><b style="color:${x.type=='vente'?'green':'red'}">${x.type=='vente'?'+':'-'} ${x.montant.toLocaleString()} Fc</b> <button class="btn-sup" onclick="supprimer(${i})">X</button></span></div>`;});document.getElementById('tVente').innerText=v.toLocaleString()+' Fc';document.getElementById('tDepense').innerText=d.toLocaleString()+' Fc';let b=v-d;let el=document.getElementById('tBenef');el.innerText=b.toLocaleString()+' Fc';el.style.color=b>=0?'green':'red';document.getElementById('liste').innerHTML=html||'Aucune vente';}
-charger();setInterval(charger,5000);
-</script></body></html>
+
+<header>
+<h1>SHOP <span>AIRTEL</span></h1>
+<p>Dépôt • Retrait • Transfert • Kinshasa</p>
+</header>
+
+<div class="hero">
+<h2>Bienvenue chez Shop Airtel</h2>
+<p>Dépôt et Retrait rapide, en toute sécurité. 7j/7</p>
+<a href="https://wa.me/243000000000?text=Bonjour%20Shop%20Airtel%2C%20je%20veux%20faire%20un%20d%C3%A9p%C3%B4t%20ou%20retrait">Commander sur WhatsApp</a>
+</div>
+
+<div class="section">
+<h3>Nos Services</h3>
+<div class="grid">
+<div class="card">
+<div class="icon">💰</div>
+<h4>Dépôt Airtel Money</h4>
+<p>Déposez rapidement</p>
+<a href="https://wa.me/243000000000?text=Bonjour%2C%20je%20veux%20faire%20un%20D%C3%89P%C3%94T%20Airtel%20Money">Faire un Dépôt</a>
+</div>
+<div class="card">
+<div class="icon">🏧</div>
+<h4>Retrait Airtel Money</h4>
+<p>Retirez en 2 minutes</p>
+<a href="https://wa.me/243000000000?text=Bonjour%2C%20je%20veux%20faire%20un%20RETRAIT%20Airtel%20Money">Faire un Retrait</a>
+</div>
+<div class="card orange">
+<div class="icon">🟠</div>
+<h4>Orange Money</h4>
+<p>Dépôt & Retrait Orange</p>
+<a href="https://wa.me/243000000000?text=Bonjour%2C%20je%20veux%20un%20service%20Orange%20Money">Orange Money</a>
+</div>
+<div class="card blue">
+<div class="icon">🔵</div>
+<h4>Airtel / RTL</h4>
+<p>Forfaits & Recharges</p>
+<a href="https://wa.me/243000000000?text=Bonjour%2C%20je%20veux%20acheter%20un%20forfait%20Airtel%20ou%20RTL">Forfaits</a>
+</div>
+<div class="card green">
+<div class="icon">📱</div>
+<h4>Unités / Mega</h4>
+<p>Crédit pour tous réseaux</p>
+<a href="https://wa.me/243000000000?text=Bonjour%2C%20je%20veux%20acheter%20des%20unit%C3%A9s">Acheter Unités</a>
+</div>
+<div class="card yellow">
+<div class="icon">⚡</div>
+<h4>Transfert Rapide</h4>
+<p>Envoyez de l'argent</p>
+<a href="https://wa.me/243000000000?text=Bonjour%2C%20je%20veux%20faire%20un%20transfert">Transférer</a>
+</div>
+</div>
+</div>
+
+<div class="section">
+<h3>Tarifs & Forfaits Populaires</h3>
+<div class="list">
+<div><b>Forfait 1GB - Airtel</b><span>5 000 FC</span></div>
+<div><b>Forfait 2.5GB - Airtel</b><span>10 000 FC</span></div>
+<div><b>Forfait 5GB - Airtel</b><span>20 000 FC</span></div>
+<div><b>Unités 1000 FC</b><span>1 000 FC</span></div>
+<div><b>Unités 5000 FC</b><span>5 000 FC</span></div>
+</div>
+</div>
+
+<div class="info">
+<b>📍 Adresse :</b> Kinshasa, RDC<br>
+<b>🕒 Ouvert :</b> Lundi - Dimanche, 07h00 - 21h00<br>
+<b>📞 WhatsApp :</b> +243 000 000 000<br>
+<b>✅ Pourquoi nous ?</b> Rapide, Fiable, Disponible. Votre argent en sécurité, toujours.<br><br>
+<i>Remplace le numéro 243000000000 par ton vrai numéro WhatsApp dans le code.</i>
+</div>
+
+<a class="wa" href="https://wa.me/243000000000">💬</a>
+
+<footer>
+<a href="#" class="active">🏠<br>Accueil</a>
+<a href="https://wa.me/243000000000">💰<br>Dépôt</a>
+<a href="https://wa.me/243000000000">🏧<br>Retrait</a>
+<a href="https://wa.me/243000000000">📞<br>Contact</a>
+</footer>
+
+</body>
+</html>
+
