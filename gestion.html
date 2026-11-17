@@ -3,114 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gestion Shop - Patron</title>
+<title>Gestion CLOUD</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-body{background:#000;color:#fff;padding:15px;padding-bottom:30px}
-h1{text-align:center;font-size:22px}h1 span{color:#e40000}
-p.sub{text-align:center;color:#aaa;font-size:13px;margin-bottom:15px}
+body{background:#000;color:#fff;padding:15px}
+h1{text-align:center}h1 span{color:#e40000}
+.sub{text-align:center;color:#aaa;font-size:13px;margin-bottom:12px}
+.sync{text-align:center;background:#001a00;border:1px solid #00ff88;color:#00ff88;padding:9px;border-radius:20px;font-size:12px;margin-bottom:12px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .box{background:#111;border:1px solid #222;border-radius:14px;padding:14px;text-align:center}
-.box small{color:#aaa;font-size:12px}.box b{font-size:20px;display:block;margin-top:4px}
-.green b{color:#00ff88}.red b{color:#ff4444}.blue b{color:#00ccff}.yellow b{color:#ffcc00}
-.card{background:#111;border:1px solid #222;border-radius:14px;padding:15px;margin-top:15px}
-.card h3{margin-bottom:12px;border-left:4px solid #e40000;padding-left:8px}
-label{font-size:13px;color:#ccc;display:block;margin-top:10px}
-input,select{width:100%;padding:12px;margin-top:5px;background:#000;border:1px solid #333;color:#fff;border-radius:10px;font-size:15px}
-.checks{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-.checks label{background:#000;border:1px solid #333;padding:10px 12px;border-radius:20px;display:flex;gap:6px;align-items:center;margin:0;cursor:pointer}
-.checks input{width:auto;margin:0}
-.checks label.on{border-color:#e40000;background:#2a0000}
-.btn{width:100%;padding:14px;margin-top:15px;border:none;border-radius:12px;font-weight:bold;font-size:16px;cursor:pointer}
-.btnVente{background:#00a651;color:#fff}.btnDep{background:#e40000;color:#fff}
-table{width:100%;font-size:13px;border-collapse:collapse;margin-top:10px}
-th,td{padding:10px 6px;border-bottom:1px solid #222;text-align:left}
-.badge{padding:4px 8px;border-radius:10px;font-size:11px;font-weight:bold}
-.vodacom{background:#e40000}.airtel{background:#e40000}.orange{background:#ff6600}.rtl{background:#0066ff}.autre{background:#555}
-.del{background:#222;color:#fff;border:none;padding:6px 8px;border-radius:8px}
-.top{display:flex;gap:8px;margin-top:10px}.top button{flex:1;padding:10px;border-radius:10px;background:#222;color:#fff;border:1px solid #333}
-</style>
-</head>
-<body>
-<h1>GESTION <span>SHOP</span></h1>
-<p class="sub">Pour le Patron - Contrôle Ventes, Dépenses, Bénéfices</p>
-
-<div class="grid">
-<div class="box green"><small>💰 TOTAL VENTES</small><b id="tVente">0 FC</b></div>
-<div class="box red"><small>💸 TOTAL DÉPENSES</small><b id="tDep">0 FC</b></div>
-<div class="box blue"><small>📊 BÉNÉFICE</small><b id="tBen">0 FC</b></div>
-<div class="box yellow"><small>🧾 NOMBRE D'OPÉRATIONS</small><b id="tNb">0</b></div>
-</div>
-
-<div class="card">
-<h3>➕ Nouvelle Opération</h3>
-<label>Type :</label>
-<select id="type"><option value="Vente">✅ VENTE</option><option value="Dépense">❌ DÉPENSE</option></select>
-
-<label>Cocher le Réseau :</label>
-<div class="checks" id="reseaux">
-<label><input type="checkbox" value="Vodacom"> 🔴 Vodacom</label>
-<label><input type="checkbox" value="Airtel"> 🔴 Airtel</label>
-<label><input type="checkbox" value="Orange"> 🟠 Orange</label>
-<label><input type="checkbox" value="RTL"> 🔵 RTL</label>
-</div>
-
-<label>Montant (FC) :</label>
-<input type="number" id="montant" placeholder="Ex: 10000">
-<label>Description :</label>
-<input type="text" id="desc" placeholder="Ex: Dépôt, Retrait, Forfait, Loyer...">
-<button class="btn btnVente" onclick="ajouter()">ENREGISTRER</button>
-</div>
-
-<div class="card">
-<h3>📋 Historique - Ventes & Dépenses</h3>
-<div class="top">
-<button onclick="filtrer('Tout')">Tout</button>
-<button onclick="filtrer('Vente')">Ventes</button>
-<button onclick="filtrer('Dépense')">Dépenses</button>
-<button onclick="toutEffacer()">Effacer Tout</button>
-</div>
-<table><thead><tr><th>Date</th><th>Réseau</th><th>Type</th><th>Montant</th><th></th></tr></thead><tbody id="liste"></tbody></table>
-<p id="vide" style="text-align:center;color:#777;padding:15px">Aucune opération pour le moment.</p>
-</div>
-
-<script>
-let data = JSON.parse(localStorage.getItem('shop_gestion')||'[]');
-let filtre='Tout';
-document.querySelectorAll('.checks label').forEach(l=>{l.onclick=()=>{setTimeout(()=>{l.classList.toggle('on',l.querySelector('input').checked)},10)}});
-function ajouter(){
-let type=document.getElementById('type').value;
-let montant=parseInt(document.getElementById('montant').value);
-let desc=document.getElementById('desc').value||'Sans description';
-let reseaux=[...document.querySelectorAll('#reseaux input:checked')].map(c=>c.value);
-if(!montant){alert('Mets le montant !');return}
-if(reseaux.length==0) reseaux=['Autre'];
-data.unshift({type,montant,desc,reseaux,date:new Date().toLocaleDateString('fr-FR')+' '+new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})});
-localStorage.setItem('shop_gestion',JSON.stringify(data));
-document.getElementById('montant').value='';document.getElementById('desc').value='';
-document.querySelectorAll('#reseaux input').forEach(c=>c.checked=false);
-document.querySelectorAll('.checks label').forEach(l=>l.classList.remove('on'));
-afficher();
-}
-function afficher(){
-let ventes=data.filter(d=>d.type=='Vente').reduce((a,b)=>a+b.montant,0);
-let deps=data.filter(d=>d.type=='Dépense').reduce((a,b)=>a+b.montant,0);
-document.getElementById('tVente').textContent=ventes.toLocaleString()+' FC';
-document.getElementById('tDep').textContent=deps.toLocaleString()+' FC';
-document.getElementById('tBen').textContent=(ventes-deps).toLocaleString()+' FC';
-document.getElementById('tNb').textContent=data.length;
-let list=data.filter(d=>filtre=='Tout'||d.type==filtre);
-document.getElementById('vide').style.display=list.length?'none':'block';
-document.getElementById('liste').innerHTML=list.map((d,i)=>{
-let idx=data.indexOf(d);
-return `<tr><td>${d.date}<br><small style="color:#aaa">${d.desc}</small></td><td>${d.reseaux.map(r=>`<span class="badge ${r.toLowerCase()}">${r}</span>`).join(' ')}</td><td>${d.type=='Vente'?'✅ Vente':'❌ Dépense'}</td><td style="color:${d.type=='Vente'?'#00ff88':'#ff4444'}"><b>${d.montant.toLocaleString()} FC</b></td><td><button class="del" onclick="supprimer(${idx})">🗑️</button></td></tr>`
-}).join('');
-}
-function supprimer(i){if(confirm('Supprimer ?')){data.splice(i,1);localStorage.setItem('shop_gestion',JSON.stringify(data));afficher();}}
-function filtrer(f){filtre=f;afficher();}
-function toutEffacer(){if(confirm('Effacer TOUT l historique ?')){data=[];localStorage.removeItem('shop_gestion');afficher();}}
-afficher();
-</script>
-</body>
-</html>
-
+.box small{color:#aaa}.
